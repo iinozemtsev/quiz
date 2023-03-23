@@ -32,10 +32,9 @@ class Game {
 
 class Question {
   final String title;
-  final UnmodifiableListView<Answer> answers;
+  final List<Answer> answers;
 
-  Question({required this.title, required Iterable<Answer> answers})
-      : answers = UnmodifiableListView(answers);
+  const Question({required this.title, required this.answers});
 }
 
 class Answer {

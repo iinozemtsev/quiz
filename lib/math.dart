@@ -60,7 +60,8 @@ class _MathGameGenerator {
         .map((value) =>
             Answer(title: value.toString(), isCorrect: value == rightAnswer));
 
-    return Question(answers: answers, title: '$left ${op.symbol} $right');
+    return Question(
+        answers: answers.toList(), title: '$left ${op.symbol} $right');
   }
 
   int rand(int from, int to) => random.nextInt(to - from) + from;
