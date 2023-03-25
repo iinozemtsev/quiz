@@ -50,7 +50,7 @@ class EndScreen extends StatelessWidget {
     } else if (game.score > game.questions.length ~/ 2) {
       winText = 'Молодец! 😃';
     } else if (game.score > 0) {
-      winText = 'Можно лучше! 🙁';
+      winText = 'Не сдавайся! 💪';
     } else {
       winText = '💩';
     }
