@@ -50,18 +50,18 @@ class _MathGameGenerator {
     }
 
     final offByOneAnswer = rightAnswer + (random.nextBool() ? 1 : (-1));
-    final randomAnswers = List.generate(
-        options.answerCount - 2,
-        (_) => rand(
-            options.negativeNumbers ? -(options.max * 2) : 0, options.max * 2));
-
-    final answers = ([rightAnswer, offByOneAnswer, ...randomAnswers]
-          ..shuffle(random))
-        .map((value) =>
-            Answer(title: value.toString(), isCorrect: value == rightAnswer));
+    final answers = {rightAnswer, offByOneAnswer};
+    while (answers.length < options.answerCount) {
+      answers.add(rand(
+          options.negativeNumbers ? -(options.max * 2) : 0, options.max * 2));
+    }
 
     return Question(
-        answers: answers.toList(), title: '$left ${op.symbol} $right');
+        answers: (answers.toList()..shuffle(random))
+            .map((value) => Answer(
+                title: value.toString(), isCorrect: value == rightAnswer))
+            .toList(),
+        title: '$left ${op.symbol} $right');
   }
 
   int rand(int from, int to) => random.nextInt(to - from) + from;
