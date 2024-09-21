@@ -1,6 +1,7 @@
 import 'dart:math';
-import 'package:playground/menu_screen.dart';
+
 import 'package:playground/src/model/game_settings.dart';
+import 'package:playground/src/model/question.dart';
 
 /// Immutable current game state.
 class Game {
@@ -39,11 +40,24 @@ class Game {
       started: DateTime.now(),
       finished: null);
 
-  Game nextQuestion(String answer, {Random? random}) => update(
-        question: Question.randomQuestion(settings: settings, random: random),
-        score: answer == question.rightAnswer ? score + 1 : 0,
+  Game nextQuestionOrFinish(String answer, {Random? random}) {
+    final answered = update(
         answers: answers + 1,
-      );
+        score: answer == question.rightAnswer ? score + 1 : score);
+    final now = DateTime.now();
+    final isFinished = switch (settings.limit) {
+      MaxQuestions(value: final maxQuestions) =>
+        answered.answers >= maxQuestions,
+      Timeout(value: final timeout) => now.difference(started) >= timeout
+    };
+    if (isFinished) {
+      return answered.finish(finished: now);
+    }
+    return answered.update(
+      question: Question.randomQuestion(settings: settings, random: random),
+    );
+  }
 
-  Game finish() => update(finished: DateTime.now());
+  Game finish({DateTime? finished}) =>
+      update(finished: finished ?? DateTime.now());
 }

@@ -7,12 +7,17 @@ void main() {
 }
 
 final themeData = ThemeData(
-    colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-    useMaterial3: true,
-    elevatedButtonTheme: ElevatedButtonThemeData(
-        style:
-            ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 25))),
-    textTheme: const TextTheme(bodyLarge: TextStyle(fontSize: 25)));
+  colorScheme:
+      ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 91, 25, 204)),
+  useMaterial3: true,
+  elevatedButtonTheme: ElevatedButtonThemeData(
+      style:
+          ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 25))),
+  textTheme: const TextTheme(
+      bodyLarge: TextStyle(fontSize: 25),
+      titleLarge: TextStyle(fontSize: 35),
+      titleMedium: TextStyle(fontSize: 25)),
+);
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

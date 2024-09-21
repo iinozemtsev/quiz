@@ -1,9 +1,7 @@
-import 'dart:async';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:playground/src/model/game.dart';
 import 'package:playground/src/model/game_settings.dart';
+import 'package:playground/src/widgets/game_screen.dart';
 import 'package:playground/src/widgets/settings_screen.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -23,14 +21,20 @@ class _AppState extends State<MenuScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: IntrinsicWidth(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 30),
           child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Max number: ${settings.maxNumber}\n'
-                  'Question count: ${(settings.limit as MaxQuestions).value}',
+                  [
+                    'Max number: ${settings.maxNumber}',
+                    if (settings.limit is MaxQuestions)
+                      'Question count: ${(settings.limit as MaxQuestions).value}',
+                    if (settings.limit is Timeout)
+                      'Лимит времени: ${(settings.limit as Timeout).value.inMinutes}'
+                  ].join('\n'),
                   textAlign: TextAlign.center,
                 ),
                 ElevatedButton(
@@ -46,18 +50,23 @@ class _AppState extends State<MenuScreen> {
                       });
                     }
                   },
-                  child: const Text('Change Settings'),
+                  child: const Text('Настройки'),
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () async {
-                    // TODO: should game result pushed from the game?
-                    final gameResult = await Navigator.of(context)
-                        .push<GameResult>(MaterialPageRoute(
+                    final navigator = Navigator.of(context);
+                    final gameResult = await navigator.push<Game>(
+                        MaterialPageRoute(
                             builder: (context) =>
                                 GameScreen(settings: settings)));
+                    if (gameResult != null) {
+                      navigator.push<void>(MaterialPageRoute(
+                          builder: (context) =>
+                              GameResultScreen(game: gameResult)));
+                    }
                   },
-                  child: const Text('Start'),
+                  child: const Text('Вперёд!'),
                 )
               ]),
         ),
@@ -66,144 +75,38 @@ class _AppState extends State<MenuScreen> {
   }
 }
 
-class GameResult {
-  final int score;
-  final GameSettings settings;
-  const GameResult({required this.score, required this.settings});
-}
+class GameResultScreen extends StatelessWidget {
+  final Game game;
 
-class GameScreen extends StatefulWidget {
-  final GameSettings settings;
-
-  const GameScreen({super.key, required this.settings});
-
-  @override
-  State<StatefulWidget> createState() {
-    return _GameState();
-  }
-}
-
-class _GameState extends State<GameScreen> {
-  late Game game;
-  late final DateTime startedAt;
-  late final Timer timer;
-  var timerStarted = false;
-  var timeString = '00:00.000';
-
-  @override
-  void initState() {
-    super.initState();
-    game = Game.create(settings: widget.settings);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    if (timerStarted) {
-      timer.cancel();
-    }
-  }
+  const GameResultScreen({super.key, required this.game});
 
   @override
   Widget build(BuildContext context) {
-    if (game.isOver) {
-      return Scaffold(
-          body: SafeArea(child: Text('Game over! Score: ${game.score}')));
-    }
-
-    if (!timerStarted) {
-      setState(() {
-        timerStarted = true;
-        startedAt = DateTime.now();
-      });
-
-      timer = Timer.periodic(const Duration(milliseconds: 100), (t) {
-        setState(() {
-          final elapsed = DateTime.now().difference(startedAt);
-          final hours = elapsed.inHours == 0
-              ? ''
-              : '${elapsed.inHours.toString().padLeft(2, '0')}:';
-          final minutes = (elapsed.inMinutes % 60).toString().padLeft(2, '0');
-          final seconds = (elapsed.inSeconds % 60).toString().padLeft(2, '0');
-          final millis = (elapsed.inMilliseconds % 1000 ~/ 100).toString();
-          timeString = '$hours$minutes:$seconds.$millis';
-        });
-      });
-    }
     return Scaffold(
         body: SafeArea(
-      child: Center(
-        child: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-          Text(
-            'Question #${game.answers + 1}',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          Text(
-            timeString,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          Expanded(
             child: Center(
-              child: Text(
-                game.question.text,
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                for (final answer in game.question.answers)
-                  ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          game = game.nextQuestion(answer);
-                          if (game.answers ==
-                              (game.settings.limit as MaxQuestions).value) {
-                            game = game.finish();
-                          }
-                        });
-                      },
-                      child: Text(answer))
-              ],
-            ),
-          ),
-          const SizedBox(height: 50)
-        ]),
-      ),
-    ));
-  }
-}
-
-class Question {
-  final String text;
-  final List<String> answers;
-  final String rightAnswer;
-
-  Question(
-      {required this.text, required this.answers, required this.rightAnswer});
-
-  static Question randomQuestion(
-      {required GameSettings settings, Random? random}) {
-    random ??= Random();
-    final (a, b) = (
-      random.nextInt(settings.maxNumber + 1),
-      random.nextInt(settings.maxNumber + 1)
-    );
-    final correctAnswer = a * b;
-    final answers = <int>{correctAnswer};
-
-    while (answers.length != 3) {
-      answers.add(random.nextInt(settings.maxNumber * settings.maxNumber + 1));
-    }
-
-    return Question(
-        text: '$a x $b = ?',
-        answers: (answers.toList()..shuffle(random))
-            .map((x) => x.toString())
-            .toList(),
-        rightAnswer: correctAnswer.toString());
+                child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const SizedBox(height: 30),
+        Text('Игра окончена!', style: Theme.of(context).textTheme.titleLarge),
+        Text('Счёт: ${game.score}/${game.answers}',
+            style: Theme.of(context).textTheme.titleMedium),
+        Expanded(
+            child: Image(
+                image: AssetImage(game.score == game.answers
+                    ? 'assets/mario.webp'
+                    : game.score == 0
+                        ? 'assets/bowser.webp'
+                        : 'assets/toad.webp'))),
+        ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Назад')),
+        const SizedBox(height: 50),
+      ],
+    ))));
   }
 }
