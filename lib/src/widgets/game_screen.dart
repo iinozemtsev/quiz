@@ -76,7 +76,7 @@ class _GameState extends State<GameScreen> {
           ),
           Text(
             timeString,
-            style: Theme.of(context).textTheme.bodyLarge,
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
           Expanded(
             child: Center(
@@ -103,7 +103,10 @@ class _GameState extends State<GameScreen> {
                           Navigator.of(context).pop(updatedGame);
                         }
                       },
-                      child: Text(answer))
+                      child: Text(
+                        answer,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ))
               ],
             ),
           ),
