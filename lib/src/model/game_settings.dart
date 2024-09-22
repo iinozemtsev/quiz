@@ -27,6 +27,13 @@ class MaxQuestions implements GameLimit {
   const MaxQuestions(this.value);
 
   static const defaultValue = MaxQuestions(10);
+
+  @override
+  int get hashCode => value.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      other is MaxQuestions && other.value == value;
 }
 
 class Timeout implements GameLimit {
@@ -38,6 +45,12 @@ class Timeout implements GameLimit {
   const Timeout(this.value);
 
   static const defaultValue = Timeout(Duration(minutes: 2));
+
+  @override
+  int get hashCode => value.hashCode;
+
+  @override
+  bool operator ==(Object other) => other is Timeout && other.value == value;
 }
 
 enum GameLimitType { maxQuestions, timeout }
