@@ -103,9 +103,13 @@ class _GameState extends State<GameScreen> {
                           Navigator.of(context).pop(updatedGame);
                         }
                       },
-                      child: Text(
-                        answer,
-                        style: Theme.of(context).textTheme.titleLarge,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 0, horizontal: 20),
+                        child: Text(
+                          answer,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
                       ))
               ],
             ),
